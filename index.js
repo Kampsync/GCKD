@@ -49,8 +49,13 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
     const output = ics.join('\r\n');
 
     // NO forced download — keep it as plain text
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+    res.setHeader('Content-Disposition', 'inline');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Cache-Control', 'no-cache');
+
     res.status(200).send(output);
+
   } catch (err) {
     console.error('[ICAL ERROR]', err?.response?.data || err.message);
     res.status(500).send('Unable to fetch calendar data');
