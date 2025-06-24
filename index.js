@@ -4,7 +4,6 @@ import axios from 'axios';
 const app = express();
 const port = process.env.PORT || 8080;
 
-// iCal endpoint
 app.get('/v1/ical/:icalKey', async (req, res) => {
   const { icalKey } = req.params;
   const fullUrl = `https://api.kampsync.com/v1/ical/${icalKey}`;
@@ -13,14 +12,8 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
   try {
     const { data } = await axios.get(
       'https://xfxa-cldj-sxth.n7e.xano.io/api:yHTBBmYY/kampsync_ical_link_GCKD',
-      {
-        params: {
-          kampsync_ical_link: fullUrl
-        }
-      }
+      { params: { kampsync_ical_link: fullUrl } }
     );
-
-    console.log('[ICAL RESPONSE]', data);
 
     let ics = `BEGIN:VCALENDAR
 VERSION:2.0
@@ -50,9 +43,8 @@ END:VEVENT
 
     ics += `END:VCALENDAR`;
 
-    // Force plain text display to avoid .ics download
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.setHeader('Content-Disposition', 'inline; filename="calendar.ics"');
+    res.setHeader('Content-Disposition', 'inline');
     res.setHeader('X-Content-Type-Options', 'nosniff');
 
     res.status(200).send(ics);
@@ -62,16 +54,15 @@ END:VEVENT
   }
 });
 
-// Helpers
 function formatDate(dateStr) {
   return new Date(dateStr).toISOString().split('T')[0].replace(/-/g, '');
 }
 
 function escape(str) {
   return (str || '')
-    .replace(/\r?\n/g, '')  // remove newlines
-    .replace(/,/g, '\\,')   // escape commas
-    .replace(/;/g, '\\;');  // escape semicolons
+    .replace(/\r?\n/g, '')
+    .replace(/,/g, '\\,')
+    .replace(/;/g, '\\;');
 }
 
 app.listen(port, () => {
