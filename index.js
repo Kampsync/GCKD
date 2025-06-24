@@ -49,7 +49,7 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
     const output = ics.join('\r\n');
 
     // NO forced download — keep it as plain text
-    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.setHeader('Content-Disposition', 'inline');
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Cache-Control', 'no-cache');
