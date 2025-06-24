@@ -1,7 +1,6 @@
-FROM python:3.10-slim
-
+FROM node:20-slim
 WORKDIR /app
+COPY package*.json ./
+RUN npm install
 COPY . .
-RUN pip install --no-cache-dir -r requirements.txt
-
-CMD ["python", "main.py"]
+CMD ["node", "index.js"]
