@@ -31,7 +31,7 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
         const end = formatDate(event.end_date);
         const summary = escape(`RVshare booking – ${event.summary}`);
         const description = escape(`RVshare booking – ${event.summary}\\nhttps://rvshare.com/dashboard/reservations`);
-        const uid = `rvshare-${start}-${event.reservation_id || Date.now()}`;
+        const uid = `${event.reservation_id || crypto.randomUUID()}@kampsync.com`;
         const dtstamp = formatDTStamp(new Date());
 
         ics.push('BEGIN:VEVENT');
