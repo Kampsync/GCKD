@@ -20,7 +20,9 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
       'VERSION:2.0',
       'PRODID:-//icalendar-ruby',
       'CALSCALE:GREGORIAN',
-      'METHOD:PUBLISH'
+      'METHOD:PUBLISH',
+      'X-WR-CALNAME:KampSync Calendar',
+      'X-PUBLISHED-TTL:PT1H'
     ];
 
     if (Array.isArray(data)) {
@@ -30,9 +32,11 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
         const summary = escape(event.summary);
         const description = escape(`${event.summary}\n${event.reservation_id || ''}`);
         const uid = event.uid || `${event.reservation_id || Date.now()}-${start}`;
+        const dtstamp = formatDTStamp(new Date());
 
         ics.push('BEGIN:VEVENT');
         ics.push(`UID:${uid}`);
+        ics.push(`DTSTAMP:${dtstamp}`);
         ics.push(`SUMMARY:${summary}`);
         ics.push(`DTSTART;VALUE=DATE:${start}`);
         ics.push(`DTEND;VALUE=DATE:${end}`);
@@ -58,6 +62,10 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
 
 function formatDate(dateStr) {
   return new Date(dateStr).toISOString().split('T')[0].replace(/-/g, '');
+}
+
+function formatDTStamp(date) {
+  return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
 }
 
 function escape(str) {
