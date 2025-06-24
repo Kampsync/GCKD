@@ -10,10 +10,10 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
   console.log('Received iCal key:', icalKey);
 
   try {
-    // Request calendar data from Xano
+    // Request calendar data from Xano using correct param key
     const { data } = await axios.get(
       'https://xfxa-cldj-sxth.n7e.xano.io/api:yHTBBmYY/kampsync_ical_link_GCKD',
-      { params: { icalKey } }
+      { params: { key: icalKey } }
     );
 
     // Build the .ics calendar string
