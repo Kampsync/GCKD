@@ -29,8 +29,8 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
       data.forEach(event => {
         const start = formatDate(event.start_date);
         const end = formatDate(event.end_date);
-        const summary = escape(event.summary);
-        const description = escape(`${event.summary}\n${event.reservation_id || ''}`);
+        const summary = sanitize(event.summary);
+        const description = `${event.summary || ''}\n${event.reservation_id || ''}`;
         const uid = event.uid || `${event.reservation_id || Date.now()}-${start}`;
         const dtstamp = formatDTStamp(new Date());
 
@@ -47,7 +47,7 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
 
     ics.push('END:VCALENDAR');
 
-    const output = ics.join('\r\n');
+    const output = ics.join('\n');
 
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.setHeader('Content-Disposition', 'inline');
@@ -67,11 +67,8 @@ function formatDTStamp(date) {
   return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
 }
 
-function escape(str) {
-  return (str || '')
-    .replace(/\r?\n/g, '\\n')
-    .replace(/,/g, '\\,')
-    .replace(/;/g, '\\;');
+function sanitize(str) {
+  return (str || '').replace(/[\r\n]+/g, ' ');
 }
 
 app.listen(port, () => {
