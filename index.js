@@ -49,8 +49,8 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
 
     const output = ics.join('\r\n');
 
-    // Fix headers to stop forced downloads
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    // FINAL FIX: HEADERS THAT OUTDOORSY ACCEPTS
+    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
     res.setHeader('Content-Disposition', 'inline');
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.status(200).send(output);
