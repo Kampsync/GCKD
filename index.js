@@ -48,9 +48,8 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
     ics.push('END:VCALENDAR');
     const output = ics.join('\r\n');
 
-    // Critical: MUST be this exact content type
-    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
-
+    // NO forced download — keep it as plain text
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.status(200).send(output);
   } catch (err) {
     console.error('[ICAL ERROR]', err?.response?.data || err.message);
