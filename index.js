@@ -27,22 +27,20 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
 
     if (Array.isArray(data)) {
       data.forEach(event => {
-        const start = formatDateTime(event.start_date);
-        const end = formatDateTime(event.end_date);
-        const summary = sanitize(event.summary);
-        const description = sanitize(`${event.summary}\n${event.reservation_id || ''}`);
-        const uid = event.uid || `${event.reservation_id || Date.now()}-${start}`;
+        const start = formatDate(event.start_date);
+        const end = formatDate(event.end_date);
+        const summary = escape(`RVshare booking – ${event.summary}`);
+        const description = escape(`RVshare booking – ${event.summary}\\nhttps://rvshare.com/dashboard/reservations`);
+        const uid = event.uid || `${randomUID()}`;
         const dtstamp = formatDTStamp(new Date());
 
         ics.push('BEGIN:VEVENT');
-        ics.push(`UID:${uid}`);
         ics.push(`DTSTAMP:${dtstamp}`);
-        ics.push(`SUMMARY:${summary}`);
-        ics.push(`DTSTART:${start}`);
-        ics.push(`DTEND:${end}`);
+        ics.push(`UID:${uid}`);
+        ics.push(`DTSTART;VALUE=DATE:${start}`);
+        ics.push(`DTEND;VALUE=DATE:${end}`);
         ics.push(`DESCRIPTION:${description}`);
-        ics.push('SEQUENCE:0');
-        ics.push('LOCATION:');
+        ics.push(`SUMMARY:${summary}`);
         ics.push('END:VEVENT');
       });
     }
@@ -61,17 +59,24 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
   }
 });
 
-function formatDateTime(dateStr) {
-  const date = new Date(dateStr);
-  return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+function formatDate(dateStr) {
+  return new Date(dateStr).toISOString().split('T')[0].replace(/-/g, '');
 }
 
 function formatDTStamp(date) {
   return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
 }
 
-function sanitize(str) {
-  return (str || '').replace(/[\r\n]/g, '\\n').replace(/[,;]/g, match => `\\${match}`);
+function randomUID() {
+  return `kampsync-${Math.random().toString(36).substring(2, 15)}`;
+}
+
+function escape(str) {
+  return (str || '')
+    .replace(/\\/g, '\\\\')
+    .replace(/\r?\n/g, '\\n')
+    .replace(/,/g, '\\,')
+    .replace(/;/g, '\\;');
 }
 
 app.listen(port, () => {
