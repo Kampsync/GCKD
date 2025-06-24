@@ -21,7 +21,7 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
       'PRODID:icalendar-ruby',
       'CALSCALE:GREGORIAN',
       'METHOD:PUBLISH',
-      'X-WR-CALNAME:KampSync Calendar',
+      'X-WR-CALNAME:2021 Jayco Jay Flight SLX 7 183RB',
       'X-PUBLISHED-TTL:PT1H'
     ];
 
