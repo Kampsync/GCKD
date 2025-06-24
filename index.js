@@ -18,7 +18,7 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
     let ics = [
       'BEGIN:VCALENDAR',
       'VERSION:2.0',
-      'PRODID:-//icalendar-ruby',
+      'PRODID:icalendar-ruby',
       'CALSCALE:GREGORIAN',
       'METHOD:PUBLISH',
       'X-WR-CALNAME:KampSync Calendar',
