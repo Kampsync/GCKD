@@ -27,10 +27,10 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
 
     if (Array.isArray(data)) {
       data.forEach(event => {
-        const start = formatDate(event.start_date);
-        const end = formatDate(event.end_date);
+        const start = formatDateTime(event.start_date);
+        const end = formatDateTime(event.end_date);
         const summary = sanitize(event.summary);
-        const description = `${event.summary || ''}\n${event.reservation_id || ''}`;
+        const description = sanitize(`${event.summary}\n${event.reservation_id || ''}`);
         const uid = event.uid || `${event.reservation_id || Date.now()}-${start}`;
         const dtstamp = formatDTStamp(new Date());
 
@@ -38,16 +38,18 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
         ics.push(`UID:${uid}`);
         ics.push(`DTSTAMP:${dtstamp}`);
         ics.push(`SUMMARY:${summary}`);
-        ics.push(`DTSTART;VALUE=DATE:${start}`);
-        ics.push(`DTEND;VALUE=DATE:${end}`);
+        ics.push(`DTSTART:${start}`);
+        ics.push(`DTEND:${end}`);
         ics.push(`DESCRIPTION:${description}`);
+        ics.push('SEQUENCE:0');
+        ics.push('LOCATION:');
         ics.push('END:VEVENT');
       });
     }
 
     ics.push('END:VCALENDAR');
 
-    const output = ics.join('\n');
+    const output = ics.join('\r\n');
 
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.setHeader('Content-Disposition', 'inline');
@@ -59,8 +61,9 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
   }
 });
 
-function formatDate(dateStr) {
-  return new Date(dateStr).toISOString().split('T')[0].replace(/-/g, '');
+function formatDateTime(dateStr) {
+  const date = new Date(dateStr);
+  return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 }
 
 function formatDTStamp(date) {
@@ -68,7 +71,7 @@ function formatDTStamp(date) {
 }
 
 function sanitize(str) {
-  return (str || '').replace(/[\r\n]+/g, ' ');
+  return (str || '').replace(/[\r\n]/g, '\\n').replace(/[,;]/g, match => `\\${match}`);
 }
 
 app.listen(port, () => {
