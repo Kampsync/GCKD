@@ -49,9 +49,8 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
 
     const output = ics.join('\r\n');
 
-    // FINAL FIX: HEADERS THAT OUTDOORSY ACCEPTS
     res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
-    res.setHeader('Content-Disposition', 'inline');
+    res.setHeader('Content-Disposition', 'inline; filename="calendar.ics"');
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.status(200).send(output);
   } catch (err) {
