@@ -7,12 +7,17 @@ const port = process.env.PORT || 8080;
 // iCal endpoint
 app.get('/v1/ical/:icalKey', async (req, res) => {
   const { icalKey } = req.params;
-  console.log('Received iCal key:', icalKey);
+  const fullUrl = `https://api.kampsync.com/v1/ical/${icalKey}`;
+  console.log('Full URL sent to Xano:', fullUrl);
 
   try {
     const { data } = await axios.get(
       'https://xfxa-cldj-sxth.n7e.xano.io/api:yHTBBmYY/kampsync_ical_link_GCKD',
-      { params: { kampsync_ical_link: icalKey } }
+      {
+        params: {
+          kampsync_ical_link: fullUrl
+        }
+      }
     );
 
     console.log('[ICAL RESPONSE]', data);
