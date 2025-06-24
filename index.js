@@ -10,13 +10,13 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
   console.log('Received iCal key:', icalKey);
 
   try {
-    // Corrected param key to match Xano's expected input
     const { data } = await axios.get(
       'https://xfxa-cldj-sxth.n7e.xano.io/api:yHTBBmYY/kampsync_ical_link_GCKD',
       { params: { kampsync_ical_link: icalKey } }
     );
 
-    // Build the .ics calendar string
+    console.log('[ICAL RESPONSE]', data);
+
     let ics = `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//icalendar-ruby
@@ -24,14 +24,15 @@ CALSCALE:GREGORIAN
 METHOD:PUBLISH
 `;
 
-    data.forEach(event => {
-      const start = formatDate(event.start_date);
-      const end = formatDate(event.end_date);
-      const summary = escape(event.summary);
-      const description = `${summary}\\n${event.reservation_id}`;
-      const uid = event.uid || `${event.reservation_id}-${start}`;
+    if (Array.isArray(data)) {
+      data.forEach(event => {
+        const start = formatDate(event.start_date);
+        const end = formatDate(event.end_date);
+        const summary = escape(event.summary);
+        const description = `${summary}\\n${event.reservation_id || ''}`;
+        const uid = event.uid || `${event.reservation_id || Date.now()}-${start}`;
 
-      ics += `BEGIN:VEVENT
+        ics += `BEGIN:VEVENT
 UID:${uid}
 SUMMARY:${summary}
 DTSTART;VALUE=DATE:${start}
@@ -39,13 +40,13 @@ DTEND;VALUE=DATE:${end}
 DESCRIPTION:${description}
 END:VEVENT
 `;
-    });
+      });
+    }
 
     ics += `END:VCALENDAR`;
 
-    // Display raw .ics as plain text in the browser
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.setHeader('Content-Disposition', 'inline');
+    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+    res.setHeader('Content-Disposition', 'inline; filename="calendar.ics"');
     res.status(200).send(ics);
   } catch (err) {
     console.error('[ICAL ERROR]', err?.response?.data || err.message);
@@ -59,7 +60,10 @@ function formatDate(dateStr) {
 }
 
 function escape(str) {
-  return (str || '').replace(/\r?\n/g, '').replace(/,/g, '\\,');
+  return (str || '')
+    .replace(/\r?\n/g, '') // remove newlines
+    .replace(/,/g, '\\,')   // escape commas
+    .replace(/;/g, '\\;');  // escape semicolons
 }
 
 app.listen(port, () => {
