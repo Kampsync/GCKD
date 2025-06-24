@@ -43,7 +43,8 @@ END:VEVENT
 
     ics += `END:VCALENDAR`;
 
-    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+    // Display raw .ics as plain text in the browser
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.setHeader('Content-Disposition', 'inline');
     res.status(200).send(ics);
   } catch (err) {
