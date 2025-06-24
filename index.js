@@ -31,7 +31,7 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
         const end = formatDate(event.end_date);
         const summary = escape(`RVshare booking – ${event.summary}`);
         const description = escape(`RVshare booking – ${event.summary}\\nhttps://rvshare.com/dashboard/reservations`);
-        const uid = event.uid || `${randomUID()}`;
+        const uid = event.uid || `kampsync-${Math.random().toString(36).substring(2, 15)}`;
         const dtstamp = formatDTStamp(new Date());
 
         ics.push('BEGIN:VEVENT');
@@ -46,12 +46,11 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
     }
 
     ics.push('END:VCALENDAR');
-
     const output = ics.join('\r\n');
 
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-    res.setHeader('Content-Disposition', 'inline');
-    res.setHeader('X-Content-Type-Options', 'nosniff');
+    // Critical: MUST be this exact content type
+    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+
     res.status(200).send(output);
   } catch (err) {
     console.error('[ICAL ERROR]', err?.response?.data || err.message);
@@ -65,10 +64,6 @@ function formatDate(dateStr) {
 
 function formatDTStamp(date) {
   return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
-}
-
-function randomUID() {
-  return `kampsync-${Math.random().toString(36).substring(2, 15)}`;
 }
 
 function escape(str) {
