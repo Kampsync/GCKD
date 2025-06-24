@@ -4,19 +4,19 @@ import axios from 'axios';
 const app = express();
 const port = process.env.PORT || 8080;
 
+// iCal endpoint
 app.get('/v1/ical/:icalKey', async (req, res) => {
   const { icalKey } = req.params;
-
-  const fullKampSyncLink = `https://api.kampsync.com/v1/ical/${icalKey}`;
+  console.log('Received iCal key:', icalKey);
 
   try {
+    // Request calendar data from Xano
     const { data } = await axios.get(
       'https://xfxa-cldj-sxth.n7e.xano.io/api:yHTBBmYY/kampsync_ical_link_GCKD',
-      {
-        params: { kampsync_ical_link: fullKampSyncLink }
-      }
+      { params: { icalKey } }
     );
 
+    // Build the .ics calendar string
     let ics = `BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//icalendar-ruby
@@ -52,6 +52,7 @@ END:VEVENT
   }
 });
 
+// Helpers
 function formatDate(dateStr) {
   return new Date(dateStr).toISOString().split('T')[0].replace(/-/g, '');
 }
