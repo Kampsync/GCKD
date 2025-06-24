@@ -21,7 +21,7 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
       'PRODID:icalendar-ruby',
       'CALSCALE:GREGORIAN',
       'METHOD:PUBLISH',
-      'X-WR-CALNAME:2021 Jayco Jay Flight SLX 7 183RB',
+      'X-WR-CALNAME:Kampsync Calendar',
       'X-PUBLISHED-TTL:PT1H'
     ];
 
@@ -31,7 +31,7 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
         const end = formatDate(event.end_date);
         const summary = escape(`RVshare booking – ${event.summary}`);
         const description = escape(`RVshare booking – ${event.summary}\\nhttps://rvshare.com/dashboard/reservations`);
-        const uid = event.uid || `kampsync-${Math.random().toString(36).substring(2, 15)}`;
+        const uid = `rvshare-${start}-${event.reservation_id || Date.now()}`;
         const dtstamp = formatDTStamp(new Date());
 
         ics.push('BEGIN:VEVENT');
