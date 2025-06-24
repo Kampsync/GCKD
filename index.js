@@ -32,7 +32,8 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
         const summary = escape(`RVshare booking – ${event.summary}`);
         const description = escape(`RVshare booking – ${event.summary}\\nhttps://rvshare.com/dashboard/reservations`);
         const uid = event.uid;
-        const dtstamp = formatDTStamp(new Date());
+        const dtstampSource = event.updated_at || event.created_at || event.start_date;
+        const dtstamp = formatDTStamp(dtstampSource);
 
         ics.push('BEGIN:VEVENT');
         ics.push(`DTSTAMP:${dtstamp}`);
@@ -67,7 +68,7 @@ function formatDate(dateStr) {
 }
 
 function formatDTStamp(date) {
-  return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+  return new Date(date).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
 }
 
 function escape(str) {
