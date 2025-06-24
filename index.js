@@ -25,6 +25,8 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
       'X-PUBLISHED-TTL:PT1H'
     ];
 
+    const dtstampGlobal = formatDTStamp(new Date());
+
     if (Array.isArray(data)) {
       data.forEach(event => {
         const start = formatDate(event.start_date);
@@ -32,8 +34,7 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
         const summary = escape(`RVshare booking – ${event.summary}`);
         const description = escape(`RVshare booking – ${event.summary}\\nhttps://rvshare.com/dashboard/reservations`);
         const uid = event.uid;
-        const dtstampSource = event.updated_at || event.created_at || event.start_date;
-        const dtstamp = formatDTStamp(dtstampSource);
+        const dtstamp = dtstampGlobal;
 
         ics.push('BEGIN:VEVENT');
         ics.push(`DTSTAMP:${dtstamp}`);
