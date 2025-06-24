@@ -50,8 +50,11 @@ END:VEVENT
 
     ics += `END:VCALENDAR`;
 
-    res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+    // Force plain text display to avoid .ics download
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.setHeader('Content-Disposition', 'inline; filename="calendar.ics"');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+
     res.status(200).send(ics);
   } catch (err) {
     console.error('[ICAL ERROR]', err?.response?.data || err.message);
@@ -66,7 +69,7 @@ function formatDate(dateStr) {
 
 function escape(str) {
   return (str || '')
-    .replace(/\r?\n/g, '') // remove newlines
+    .replace(/\r?\n/g, '')  // remove newlines
     .replace(/,/g, '\\,')   // escape commas
     .replace(/;/g, '\\;');  // escape semicolons
 }
