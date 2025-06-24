@@ -4,7 +4,6 @@ import axios from 'axios';
 const app = express();
 const port = process.env.PORT || 8080;
 
-// iCal endpoint
 app.get('/v1/ical/:icalKey', async (req, res) => {
   const { icalKey } = req.params;
   const fullUrl = `https://api.kampsync.com/v1/ical/${icalKey}`;
@@ -13,62 +12,57 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
   try {
     const { data } = await axios.get(
       'https://xfxa-cldj-sxth.n7e.xano.io/api:yHTBBmYY/kampsync_ical_link_GCKD',
-      {
-        params: {
-          kampsync_ical_link: fullUrl
-        }
-      }
+      { params: { kampsync_ical_link: fullUrl } }
     );
 
-    console.log('[ICAL RESPONSE]', data);
-
-    let ics = `BEGIN:VCALENDAR
-VERSION:2.0
-PRODID:-//icalendar-ruby
-CALSCALE:GREGORIAN
-METHOD:PUBLISH
-`;
+    let ics = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//icalendar-ruby',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH'
+    ];
 
     if (Array.isArray(data)) {
       data.forEach(event => {
         const start = formatDate(event.start_date);
         const end = formatDate(event.end_date);
         const summary = escape(event.summary);
-        const description = `${summary}\\n${event.reservation_id || ''}`;
+        const description = escape(`${event.summary}\n${event.reservation_id || ''}`);
         const uid = event.uid || `${event.reservation_id || Date.now()}-${start}`;
 
-        ics += `BEGIN:VEVENT
-UID:${uid}
-SUMMARY:${summary}
-DTSTART;VALUE=DATE:${start}
-DTEND;VALUE=DATE:${end}
-DESCRIPTION:${description}
-END:VEVENT
-`;
+        ics.push('BEGIN:VEVENT');
+        ics.push(`UID:${uid}`);
+        ics.push(`SUMMARY:${summary}`);
+        ics.push(`DTSTART;VALUE=DATE:${start}`);
+        ics.push(`DTEND;VALUE=DATE:${end}`);
+        ics.push(`DESCRIPTION:${description}`);
+        ics.push('END:VEVENT');
       });
     }
 
-    ics += `END:VCALENDAR`;
+    ics.push('END:VCALENDAR');
 
-    // Set headers to force in-browser display as raw text
+    const output = ics.join('\r\n');
+
+    // Fix headers to stop forced downloads
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.setHeader('Content-Disposition', 'inline');
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.status(200).send(ics);
+    res.status(200).send(output);
   } catch (err) {
     console.error('[ICAL ERROR]', err?.response?.data || err.message);
     res.status(500).send('Unable to fetch calendar data');
   }
 });
 
-// Helpers
 function formatDate(dateStr) {
   return new Date(dateStr).toISOString().split('T')[0].replace(/-/g, '');
 }
 
 function escape(str) {
   return (str || '')
-    .replace(/\r?\n/g, '')
+    .replace(/\r?\n/g, '\\n')
     .replace(/,/g, '\\,')
     .replace(/;/g, '\\;');
 }
