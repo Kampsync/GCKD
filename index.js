@@ -31,10 +31,35 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
       data.forEach(event => {
         const start = formatDate(event.start_date);
         const end = formatDate(event.end_date);
-        const summary = escape(`RVshare booking – ${event.summary}`);
-        const description = escape(`RVshare booking – ${event.summary}\\nhttps://rvshare.com/dashboard/reservations`);
-        const uid = event.uid;
+        const uid = event.uid || generateUID(); // fallback UID
         const dtstamp = dtstampGlobal;
+        const platform = (event.source_platform || 'Booking').toLowerCase();
+
+        // Determine booking link
+        let bookingLink = '';
+        const rawUID = uid || '';
+        if (platform.includes('rvshare') && rawUID.length > 10 && !rawUID.includes('Booking')) {
+          bookingLink = 'https://rvshare.com/dashboard/reservations';
+        } else if (platform.includes('outdoorsy') && rawUID.includes('Booking')) {
+          const match = rawUID.match(/(\d{6,})/);
+          if (match) bookingLink = `https://www.outdoorsy.com/dashboard/bookings/${match[1]}`;
+        } else if (platform.includes('rvezy') && rawUID.length > 10) {
+          bookingLink = `https://www.rvezy.com/owner/reservations/${rawUID}`;
+        } else if (platform.includes('airbnb')) {
+          bookingLink = 'https://www.airbnb.com/hosting/reservations';
+        } else if (platform.includes('hipcamp')) {
+          bookingLink = 'View this booking by logging into your Hipcamp host dashboard.';
+        } else if (platform.includes('camplify')) {
+          bookingLink = 'Log in to your Camplify host dashboard to view booking details.';
+        } else if (platform.includes('yescapa')) {
+          bookingLink = 'Log in to your Yescapa dashboard to view booking details.';
+        }
+
+        const summary = escape([event.source_platform, event.summary].filter(Boolean).join(', '));
+        const descriptionParts = [];
+        if (event.description) descriptionParts.push(event.description);
+        if (bookingLink) descriptionParts.push(`Booking Link: ${bookingLink}`);
+        const description = escape(descriptionParts.join('\n'));
 
         ics.push('BEGIN:VEVENT');
         ics.push(`DTSTAMP:${dtstamp}`);
@@ -50,7 +75,6 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
     ics.push('END:VCALENDAR');
     const output = ics.join('\r\n');
 
-    // NO forced download — keep it as plain text
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.setHeader('Content-Disposition', 'inline');
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -78,6 +102,10 @@ function escape(str) {
     .replace(/\r?\n/g, '\\n')
     .replace(/,/g, '\\,')
     .replace(/;/g, '\\;');
+}
+
+function generateUID() {
+  return `uid-${Math.random().toString(36).substring(2, 10)}@kampsync`;
 }
 
 app.listen(port, () => {
