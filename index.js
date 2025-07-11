@@ -53,6 +53,14 @@ app.get('/v1/ical/:icalKey', async (req, res) => {
           bookingLink = 'Log in to your Camplify host dashboard to view booking details.';
         } else if (platform.includes('yescapa')) {
           bookingLink = 'Log in to your Yescapa dashboard to view booking details.';
+        } else if (platform.includes('harvesthost')) {
+          bookingLink = 'https://harvesthosts.com/dashboard/';
+        } else if (platform.includes('boondockers')) {
+          bookingLink = 'https://www.boondockerswelcome.com/hosts/dashboard/';
+        } else if (platform.includes('pitchup')) {
+          bookingLink = 'Log in to your Pitchup dashboard to view booking details.';
+        } else if (platform.includes('safarinow')) {
+          bookingLink = 'Log in to your SafariNow dashboard to view booking details.';
         }
 
         const summary = escape([event.source_platform, event.summary].filter(Boolean).join(', '));
